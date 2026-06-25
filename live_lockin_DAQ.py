@@ -34,7 +34,7 @@ class Parameters(Enum):
 ##print(Mode.IDLE.value)
 
 
-class SPMaster(QMainWindow):
+class LiveLockin(QMainWindow):
     '''
     Main GUI thread using uic.loadUI(), grabbing the
     QtDesigner widgets. Widgets control the state of the data
@@ -49,8 +49,8 @@ class SPMaster(QMainWindow):
         self.x_axis_1 = pg.AxisItem("bottom")
         self.x_axis_1.setLabel(text="Time", units="s")
         self.y_axis_1 = pg.AxisItem("left")
-        self.y_axis_1.setLabel(text="Simulated acquisiton data",
-                               units="a.u.")
+        self.y_axis_1.setLabel(text="R",
+                               units="V")
         self.plot_1.setAxisItems({"bottom":self.x_axis_1,
                                   "left":self.y_axis_1})
 
@@ -88,11 +88,11 @@ class SPMaster(QMainWindow):
             )
         self.plot_button.clicked.connect(self.toggle_display)
 
-        self.actionConnect_equipment.triggered.connect(self.connect_equipment)
+        #self.actionConnect_equipment.triggered.connect(self.connect_equipment)
         
-    def connect_equipment(self):
-        self.equipment_dialog = ConnectEquipment(self)
-        self.equipment_dialog.exec_()
+##    def connect_equipment(self):
+##        self.equipment_dialog = ConnectEquipment(self)
+##        self.equipment_dialog.exec_()
 
     def start_daq_thread(self) -> None:
         '''
@@ -227,7 +227,7 @@ class DAQThread(QtCore.QThread):
         self.published_snapshot = None
         
         self.rm = pyvisa.ResourceManager()
-        self.lockin = self.rm.open_resource('USB0::46342::8192::003436::0::INSTR')
+        self.lockin = self.rm.open_resource('USB0::0xB506::0x2000::003051::INSTR')
         self.lockin.timeout = 1000
 
     def run(self) -> None:
@@ -281,34 +281,34 @@ class DAQThread(QtCore.QThread):
         except:
             pass
 
-class ConnectEquipment(QDialog):
-    def __init__(self, parent):
-        super().__init__(parent)
-        uic.loadUi("equipment_dialog.ui", self)
-
-        equipment_list = [("Lockin", "USB::EQUIPMENT::TAG1","Connected"),
-                          ("Oscilloscope", "USB::EQUIPMENT::TAG2","Disconnected")]
-        table = self.tableWidget
-        table.setRowCount(len(equipment_list))
-        table.setColumnCount(len(equipment_list[0]))
-        table.setHorizontalHeaderLabels(["Name", "Visa tag", "Status"])
-
-        for i, (name, tag, status) in enumerate(equipment_list):
-            _name = QTableWidgetItem(name)
-            _tag = QTableWidgetItem(tag)
-            _status = QTableWidgetItem(status)
-            table.setItem(i, 0, _name)
-            table.setItem(i, 1, _tag)
-            table.setItem(i, 2, _status)
-
-        table.resizeRowsToContents()
-        table.resizeColumnsToContents()
-        table.show()
+##class ConnectEquipment(QDialog):
+##    def __init__(self, parent):
+##        super().__init__(parent)
+##        uic.loadUi("equipment_dialog.ui", self)
+##
+##        equipment_list = [("Lockin", "USB::EQUIPMENT::TAG1","Connected"),
+##                          ("Oscilloscope", "USB::EQUIPMENT::TAG2","Disconnected")]
+##        table = self.tableWidget
+##        table.setRowCount(len(equipment_list))
+##        table.setColumnCount(len(equipment_list[0]))
+##        table.setHorizontalHeaderLabels(["Name", "Visa tag", "Status"])
+##
+##        for i, (name, tag, status) in enumerate(equipment_list):
+##            _name = QTableWidgetItem(name)
+##            _tag = QTableWidgetItem(tag)
+##            _status = QTableWidgetItem(status)
+##            table.setItem(i, 0, _name)
+##            table.setItem(i, 1, _tag)
+##            table.setItem(i, 2, _status)
+##
+##        table.resizeRowsToContents()
+##        table.resizeColumnsToContents()
+##        table.show()
         
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    win = SPMaster()
+    win = LiveLockin()
     win.show()
     sys.exit(app.exec_())
